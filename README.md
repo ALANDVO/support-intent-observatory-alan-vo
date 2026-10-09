@@ -1,6 +1,6 @@
 # support-intent-observatory-alan-vo — Alan Vo | AI & Machine Learning
 
-Current version: `1.0.0`.
+Current version: `1.1.0`.
 
 Customer support engineering teams often suffer from dispatch bottlenecks and routing latency when manually triaging inbound customer inquiries. **Support Intent Observatory** solves this problem by providing a locally trainable, deterministic natural language processing (NLP) system that extracts TF-IDF n-gram feature vectors, trains calibrated multi-class intent classifiers across key operational support categories, calculates prediction margins to detect ambiguous or uncertain tickets, and automatically routes edge cases into a human-in-the-loop review queue. Intended for support engineers, operations analysts, and machine learning practitioners, the platform enables offline ML classification without external API dependencies while offering opt-in LLM advisory insights grounded in actual ticket records.
 
