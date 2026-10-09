@@ -1,0 +1,67 @@
+{
+  "id": "support-observatory",
+  "realm": "support-observatory",
+  "displayName": "Support Intent Observatory Realm",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "viewer",
+        "description": "Read-only viewer role for models, evaluations, and triage reports"
+      },
+      {
+        "name": "operator",
+        "description": "Operator role with triage inference, review queue resolution, and model training permissions"
+      },
+      {
+        "name": "admin",
+        "description": "Full administrator with dataset mutation, model management, and system auditing permissions"
+      }
+    ]
+  },
+  "groups": [],
+  "defaultRoles": [
+    "viewer"
+  ],
+  "clients": [
+    {
+      "clientId": "support-observatory-client",
+      "name": "Support Intent Observatory Frontend & API",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://127.0.0.1:3000/*",
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://127.0.0.1:3000/*##http://localhost:3000/*"
+      },
+      "protocol": "openid-connect"
+    }
+  ],
+  "identityProviders": [
+    {
+      "alias": "enterprise-saml-idp",
+      "displayName": "Enterprise SAML Broker",
+      "providerId": "saml",
+      "enabled": false,
+      "config": {
+        "singleSignOnServiceUrl": "https://idp.example.com/saml2/sso",
+        "entityId": "https://idp.example.com/saml2/metadata",
+        "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
+        "syncMode": "IMPORT",
+        "validateSignature": "true"
+      }
+    }
+  ]
+}

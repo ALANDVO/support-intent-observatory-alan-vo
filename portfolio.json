@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "name": "support-intent-observatory-alan-vo",
+  "owner": "ALANDVO",
+  "email": "alanvo@gmail.com",
+  "domain": "nlp",
+  "summary": "Train and evaluate a local TF-IDF intent classifier from labeled customer support tickets, analyze confusion matrices, and triage uncertain tickets into human review queues.",
+  "workflows": [
+    "Train and evaluate local TF-IDF intent classification models with n-gram tokenization and calibrate confidence scoring",
+    "Inspect classification performance via confusion matrices, per-class precision/recall, and intent distribution analytics",
+    "Triage incoming support tickets with automated intent classification, uncertainty routing to human review, and opt-in LLM advisory analysis"
+  ],
+  "auth": "oidc-keycloak-saml-broker",
+  "llm_providers": [
+    "openai-compatible",
+    "anthropic",
+    "gemini",
+    "ollama"
+  ],
+  "version": "1.0.0"
+}

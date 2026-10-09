@@ -1,0 +1,35 @@
+# Dependencies and virtual environments
+.venv/
+venv/
+node_modules/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage/
+.coverage
+
+# Vite / Frontend artifacts
+.vite/
+
+# Databases and environment files
+*.db
+*.sqlite
+*.sqlite3
+*.joblib
+data/
+.env
+.env.local
+
+# Agent metadata
+.antigravitycli/
+.omp/
