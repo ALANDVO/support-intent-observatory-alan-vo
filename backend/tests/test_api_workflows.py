@@ -2,13 +2,9 @@
 
 import time
 import jwt
-from fastapi.testclient import TestClient
-from app.main import app
-
-client = TestClient(app)
 
 
-def test_core_http_workflow_create_train_triage_resolve():
+def test_core_http_workflow_create_train_triage_resolve(client):
     ds_name = f"integration_test_dataset_{int(time.time() * 1000)}"
     # 1. Create a custom dataset
     dataset_payload = {
@@ -94,7 +90,7 @@ def test_core_http_workflow_create_train_triage_resolve():
     assert res_resolve.json()["resolved_intent"] == "billing_inquiry"
 
 
-def test_oidc_bearer_token_propagation_and_rejection():
+def test_oidc_bearer_token_propagation_and_rejection(client):
     # 1. Generate a synthetic valid JWT token
     now = time.time()
     valid_payload = {

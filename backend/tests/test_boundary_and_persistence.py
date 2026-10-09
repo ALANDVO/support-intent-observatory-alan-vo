@@ -1,18 +1,15 @@
 """Boundary condition tests, malformed input validation, and audit trail verification."""
 
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.main import app
+from sqlalchemy.pool import StaticPool
 from app.core.database import Base
 from app.models.entities import AuditLogRecord, DatasetRecord
 from app.services.audit_service import audit_service
 
-client = TestClient(app)
 
-
-def test_empty_or_too_short_ticket_rejected():
+def test_empty_or_too_short_ticket_rejected(client):
     res = client.post(
         "/api/tickets/triage",
         json={"text": "a"},  # text min_length is 3
@@ -21,7 +18,7 @@ def test_empty_or_too_short_ticket_rejected():
     assert res.status_code == 422  # Validation error
 
 
-def test_malformed_training_payload_rejected():
+def test_malformed_training_payload_rejected(client):
     res = client.post(
         "/api/models/train",
         json={"name": "x"},  # name min_length is 3
@@ -30,7 +27,7 @@ def test_malformed_training_payload_rejected():
     assert res.status_code == 422
 
 
-def test_not_found_endpoints_return_404():
+def test_not_found_endpoints_return_404(client):
     res_model = client.get(
         "/api/models/non-existent-model-uuid",
         headers={"X-Demo-Role": "viewer"},
@@ -52,7 +49,11 @@ def test_not_found_endpoints_return_404():
 
 
 def test_audit_service_transactional_logging():
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
     Base.metadata.create_all(bind=engine)
     TestingSession = sessionmaker(bind=engine)
     db = TestingSession()
