@@ -2,7 +2,6 @@
 
 import json
 import re
-from typing import Optional
 import httpx
 from app.core.config import settings
 from app.models.schemas import AdvisoryResponse

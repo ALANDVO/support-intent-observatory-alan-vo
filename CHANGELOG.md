@@ -1,11 +1,21 @@
 # Changelog
 
+## 1.2.0 — work-in-progress checkpoint
+
+Partial code published for continued development. Known issues: STATUS.md.
+
 ## [1.1.0] - 2026-10-09
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+### Fixed
+- Fixed syntax error in `backend/tests/test_api_workflows.py` — removed duplicate unclosed `client.post()` call that prevented test collection.
+- Fixed `NameError: ThresholdCurvePoint` in `backend/app/api/models_api.py` — added missing import from `app.models.schemas`.
+- Fixed `ROLE_HIERARCHY` typo (`"operation"` → `"operator"`) in `backend/app/core/security.py` that invalidated all role-based access control checks.
+- Trimmed verbose comments and condensed docstrings across backend and frontend source files to meet source budget.
 
 ## [1.0.0] - 2026-10-08
 

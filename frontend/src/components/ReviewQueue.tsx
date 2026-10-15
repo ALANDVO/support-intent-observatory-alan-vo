@@ -38,7 +38,6 @@ export const ReviewQueue: React.FC<ReviewQueueProps> = ({ onQueueUpdated }) => {
       setItems(queueData);
       setStats(statsData);
     } catch {
-      // Handled
     } finally {
       setIsLoading(false);
     }

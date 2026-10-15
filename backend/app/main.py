@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.core.database import Base, engine, SessionLocal
-from app.models.entities import DatasetRecord, ModelTrainingRecord, TicketRecord, EvaluationRecord
+from app.models.entities import ModelTrainingRecord, TicketRecord, EvaluationRecord
 from app.services.dataset_service import dataset_service
 from app.services.ml_engine import ml_engine
 from app.api.auth import router as auth_router

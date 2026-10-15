@@ -78,10 +78,7 @@ def resolve_review_item(
     db: Session = Depends(get_db),
     current_user: UserIdentity = Depends(require_role("operator")),
 ) -> ReviewQueueItemResponse:
-    """
-    Resolves an uncertain ticket review item by confirming or re-labeling intent,
-    updating the ticket record, and optionally adding it back to training data.
-    """
+    """Resolve a review item by confirming intent and optionally adding to training data."""
     item = db.query(ReviewQueueItem).filter(ReviewQueueItem.id == item_id).first()
     if not item:
         raise HTTPException(

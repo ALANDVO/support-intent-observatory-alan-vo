@@ -2,6 +2,7 @@
 
 import os
 import re
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 import joblib
 import numpy as np
@@ -9,6 +10,17 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support, accuracy_score
 from sklearn.model_selection import train_test_split
+
+
+@dataclass
+class ThresholdOptimizationResult:
+    """Result of threshold optimization analysis."""
+    optimal_confidence_threshold: float
+    optimal_margin_threshold: float
+    expected_auto_routed_rate: float
+    expected_auto_routed_accuracy: float
+    expected_review_queue_rate: float
+    threshold_curve: List[Dict[str, Any]]
 
 
 class IntentModelArtifact:
@@ -117,9 +129,56 @@ class MLEngine:
 
         classifier = LogisticRegression(C=c_reg, max_iter=max_iter, class_weight="balanced", random_state=42)
         classifier.fit(x_train_vec, y_train)
-
         y_pred = classifier.predict(x_test_vec)
+        y_pred_proba = classifier.predict_proba(x_test_vec)
+
+        test_sample_predictions = []
+        for i, (text, true_label) in enumerate(zip(x_test, y_test)):
+            probs = y_pred_proba[i]
+            class_probs = [
+                {"intent": str(lbl), "probability": float(probs[idx])}
+                for idx, lbl in enumerate(classifier.classes_)
+            ]
+            class_probs.sort(key=lambda x: x["probability"], reverse=True)
+            top_1 = class_probs[0]
+            top_2 = class_probs[1] if len(class_probs) > 1 else {"intent": "none", "probability": 0.0}
+            confidence = float(top_1["probability"])
+            margin = float(top_1["probability"] - top_2["probability"])
+            predicted = str(top_1["intent"])
+            correct = predicted == true_label
+            test_sample_predictions.append({
+                "confidence": confidence,
+                "margin": margin,
+                "correct": correct,
+                "predicted_intent": predicted,
+                "actual_intent": true_label,
+            })
+
         accuracy = float(accuracy_score(y_test, y_pred))
+
+        cm = confusion_matrix(y_test, y_pred, labels=unique_labels)
+        normalized_matrix = [
+            [round(float(v) / r.sum(), 4) if r.sum() > 0 else 0.0 for v in r]
+            for r in cm
+        ]
+
+        feature_names = vectorizer.get_feature_names_out()
+        per_intent_features: Dict[str, List[Dict[str, Any]]] = {}
+        for c_idx, lbl in enumerate(classifier.classes_):
+            if len(classifier.classes_) == 2:
+                coefs = -classifier.coef_[0] if c_idx == 0 else classifier.coef_[0]
+            else:
+                coefs = classifier.coef_[c_idx]
+            top_indices = np.argsort(coefs)[::-1][:8]
+            per_intent_features[str(lbl)] = [
+                {"feature": str(feature_names[i]), "weight": round(float(coefs[i]), 4)}
+                for i in top_indices
+            ]
+
+        majority_count = max(class_counts.values())
+        baseline_acc = round(float(majority_count) / len(labels), 4)
+        acc_delta = round(accuracy - baseline_acc, 4)
+
         precision_m, recall_m, f1_m, _ = precision_recall_fscore_support(y_test, y_pred, average="macro", zero_division=0)
         precision_w, recall_w, f1_w, _ = precision_recall_fscore_support(y_test, y_pred, average="weighted", zero_division=0)
 
@@ -146,29 +205,6 @@ class MLEngine:
             for i, lbl in enumerate(unique_labels)
         }
 
-        cm = confusion_matrix(y_test, y_pred, labels=unique_labels)
-        normalized_matrix = [
-            [round(float(v) / r.sum(), 4) if r.sum() > 0 else 0.0 for v in r]
-            for r in cm
-        ]
-
-        feature_names = vectorizer.get_feature_names_out()
-        per_intent_features: Dict[str, List[Dict[str, Any]]] = {}
-        for c_idx, lbl in enumerate(classifier.classes_):
-            if len(classifier.classes_) == 2:
-                coefs = -classifier.coef_[0] if c_idx == 0 else classifier.coef_[0]
-            else:
-                coefs = classifier.coef_[c_idx]
-            top_indices = np.argsort(coefs)[::-1][:8]
-            per_intent_features[str(lbl)] = [
-                {"feature": str(feature_names[i]), "weight": round(float(coefs[i]), 4)}
-                for i in top_indices
-            ]
-
-        majority_count = max(class_counts.values())
-        baseline_acc = round(float(majority_count) / len(labels), 4)
-        acc_delta = round(accuracy - baseline_acc, 4)
-
         artifact = IntentModelArtifact(vectorizer, classifier, unique_labels)
         artifact_path = os.path.join(self.storage_dir, f"model_{model_id}.joblib")
         joblib.dump(artifact, artifact_path)
@@ -191,6 +227,7 @@ class MLEngine:
             "train_sample_count": len(x_train),
             "test_sample_count": len(x_test),
             "model_file_path": artifact_path,
+            "test_sample_predictions": test_sample_predictions,
         }
 
     def load_model(self, model_id: str, file_path: str) -> bool:
@@ -208,5 +245,78 @@ class MLEngine:
             return {"predicted_intent": "unclassified", "confidence": 0.0, "margin": 0.0, "candidates": [], "token_highlights": []}
         return self.active_artifact.predict_single(text)
 
+    def optimize_thresholds(
+        self,
+        test_sample_predictions: List[Dict[str, Any]],
+        min_confidence: float = 0.5,
+        max_confidence: float = 0.95,
+        min_margin: float = 0.05,
+        max_margin: float = 0.5,
+        step: float = 0.025,
+        target_auto_routed_rate: Optional[float] = None,
+    ) -> ThresholdOptimizationResult:
+        """Find optimal confidence/margin thresholds via grid search on test-sample predictions."""
+        if not test_sample_predictions:
+            raise ValueError("No test sample predictions provided for optimization")
+        
+        confidences = np.array([p["confidence"] for p in test_sample_predictions])
+        margins = np.array([p["margin"] for p in test_sample_predictions])
+        correct = np.array([p["correct"] for p in test_sample_predictions])
+        
+        best_score = -1.0
+        best_conf_thresh = 0.7
+        best_margin_thresh = 0.2
+        threshold_curve = []
+        
+        conf_range = np.arange(min_confidence, max_confidence + step/2, step)
+        margin_range = np.arange(min_margin, max_margin + step/2, step)
+        
+        for conf_thresh in conf_range:
+            for margin_thresh in margin_range:
+                auto_routed_mask = (confidences >= conf_thresh) & (margins >= margin_thresh)
+                auto_routed_count = int(auto_routed_mask.sum())
+                total_count = len(confidences)
+                auto_routed_rate = auto_routed_count / total_count
+                
+                if auto_routed_count == 0:
+                    auto_routed_accuracy = 0.0
+                else:
+                    auto_routed_accuracy = float(correct[auto_routed_mask].mean())
+                
+                review_queue_rate = 1.0 - auto_routed_rate
+                
+                if target_auto_routed_rate is not None:
+                    rate_penalty = abs(auto_routed_rate - target_auto_routed_rate)
+                    score = auto_routed_accuracy * auto_routed_rate - 0.5 * rate_penalty
+                else:
+                    score = auto_routed_accuracy * auto_routed_rate - 0.3 * review_queue_rate
+                
+                threshold_curve.append({
+                    "confidence_threshold": round(float(conf_thresh), 3),
+                    "margin_threshold": round(float(margin_thresh), 3),
+                    "auto_routed_rate": round(auto_routed_rate, 4),
+                    "auto_routed_accuracy": round(auto_routed_accuracy, 4),
+                    "review_queue_rate": round(review_queue_rate, 4),
+                    "score": round(score, 4),
+                })
+                
+                if score > best_score:
+                    best_score = score
+                    best_conf_thresh = float(conf_thresh)
+                    best_margin_thresh = float(margin_thresh)
+        
+        optimal_auto_mask = (confidences >= best_conf_thresh) & (margins >= best_margin_thresh)
+        optimal_auto_routed_rate = float(optimal_auto_mask.mean())
+        optimal_auto_routed_accuracy = float(correct[optimal_auto_mask].mean()) if optimal_auto_mask.any() else 0.0
+        optimal_review_queue_rate = 1.0 - optimal_auto_routed_rate
+        
+        return ThresholdOptimizationResult(
+            optimal_confidence_threshold=round(best_conf_thresh, 3),
+            optimal_margin_threshold=round(best_margin_thresh, 3),
+            expected_auto_routed_rate=round(optimal_auto_routed_rate, 4),
+            expected_auto_routed_accuracy=round(optimal_auto_routed_accuracy, 4),
+            expected_review_queue_rate=round(optimal_review_queue_rate, 4),
+            threshold_curve=threshold_curve,
+        )
 
 ml_engine = MLEngine()

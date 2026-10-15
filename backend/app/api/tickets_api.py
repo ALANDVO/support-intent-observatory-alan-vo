@@ -1,6 +1,6 @@
 """Ticket ingestion, automated triage, and classification endpoints."""
 
-from typing import List, Optional
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
@@ -19,10 +19,7 @@ def triage_ticket_endpoint(
     db: Session = Depends(get_db),
     current_user: UserIdentity = Depends(require_role("operator")),
 ) -> TriageResponse:
-    """
-    Triages an incoming support ticket using the active ML intent model,
-    calculates prediction confidence and margin, and routes uncertain tickets to human review.
-    """
+    """Triage a support ticket and route uncertain predictions to human review."""
     response = triage_service.triage_ticket(
         db=db,
         req=req,

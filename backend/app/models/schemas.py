@@ -5,13 +5,12 @@ from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field
 
 
-# Auth Schemas
 class UserIdentity(BaseModel):
     username: str
     email: Optional[str] = None
-    role: str  # viewer, operator, admin
+    role: str
     is_authenticated: bool = True
-    auth_source: str = "oidc"  # oidc, demo
+    auth_source: str = "oidc"
 
 
 class DemoLoginRequest(BaseModel):
@@ -19,7 +18,6 @@ class DemoLoginRequest(BaseModel):
     username: Optional[str] = "demo-analyst"
 
 
-# Dataset Schemas
 class TicketInput(BaseModel):
     text: str = Field(..., min_length=3, max_length=5000)
     actual_intent: str = Field(..., min_length=2, max_length=80)
@@ -47,7 +45,6 @@ class DatasetDetailResponse(DatasetResponse):
     preview_tickets: List[Dict[str, Any]]
 
 
-# Training & Model Schemas
 class HyperparametersSchema(BaseModel):
     ngram_min: int = Field(default=1, ge=1, le=3)
     ngram_max: int = Field(default=2, ge=1, le=3)
@@ -60,7 +57,7 @@ class HyperparametersSchema(BaseModel):
 
 class ModelTrainRequest(BaseModel):
     name: str = Field(..., min_length=3, max_length=120)
-    dataset_id: Optional[str] = None  # None uses active/default dataset
+    dataset_id: Optional[str] = None
     hyperparameters: HyperparametersSchema = Field(default_factory=HyperparametersSchema)
 
 
@@ -80,10 +77,9 @@ class ModelResponse(BaseModel):
     created_at: datetime
 
 
-# Evaluation & Confusion Matrix Schemas
 class ConfusionMatrixSchema(BaseModel):
     labels: List[str]
-    matrix: List[List[int]]  # matrix[actual][predicted]
+    matrix: List[List[int]]
     normalized_matrix: List[List[float]]
 
 
@@ -122,7 +118,6 @@ class EvaluationResponse(BaseModel):
     created_at: datetime
 
 
-# Triage & Prediction Schemas
 class TriageRequest(BaseModel):
     text: str = Field(..., min_length=3, max_length=5000)
     external_ref: Optional[str] = None
@@ -150,13 +145,12 @@ class TriageResponse(BaseModel):
     margin: float
     is_uncertain: bool
     uncertainty_reason: Optional[str] = None
-    routing_status: str  # auto_routed, human_review, resolved
+    routing_status: str
     candidates: List[CandidateIntent]
     token_highlights: List[TokenHighlight]
     advisory: Optional[Dict[str, Any]] = None
 
 
-# Review Queue Schemas
 class ReviewQueueItemResponse(BaseModel):
     id: str
     ticket_id: str
@@ -180,7 +174,6 @@ class ReviewResolveRequest(BaseModel):
     add_to_training_dataset: bool = True
 
 
-# LLM Advisory Schemas
 class AdvisoryRequest(BaseModel):
     ticket_text: str = Field(..., min_length=3, max_length=5000)
     predicted_intent: str
@@ -199,7 +192,6 @@ class AdvisoryResponse(BaseModel):
     model: str
 
 
-# Audit Log Schemas
 class AuditLogResponse(BaseModel):
     id: str
     timestamp: datetime
@@ -212,7 +204,6 @@ class AuditLogResponse(BaseModel):
     status: str
 
 
-# System Stats & Health
 class SystemStatsResponse(BaseModel):
     dataset_count: int
     ticket_count: int
@@ -232,3 +223,30 @@ class HealthResponse(BaseModel):
     demo_mode: bool
     database_connected: bool
     active_model_loaded: bool
+
+
+class ThresholdOptimizationRequest(BaseModel):
+    min_confidence: float = Field(default=0.5, ge=0.1, le=0.99)
+    max_confidence: float = Field(default=0.95, ge=0.1, le=0.99)
+    min_margin: float = Field(default=0.05, ge=0.0, le=0.5)
+    max_margin: float = Field(default=0.5, ge=0.0, le=0.5)
+    step: float = Field(default=0.025, ge=0.01, le=0.1)
+    target_auto_routed_rate: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+
+
+class ThresholdCurvePoint(BaseModel):
+    confidence_threshold: float
+    margin_threshold: float
+    auto_routed_rate: float
+    auto_routed_accuracy: float
+    review_queue_rate: float
+    score: float
+
+
+class ThresholdOptimizationResponse(BaseModel):
+    optimal_confidence_threshold: float
+    optimal_margin_threshold: float
+    expected_auto_routed_rate: float
+    expected_auto_routed_accuracy: float
+    expected_review_queue_rate: float
+    threshold_curve: List[ThresholdCurvePoint]
