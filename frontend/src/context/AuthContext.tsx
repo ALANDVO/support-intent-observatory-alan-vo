@@ -18,7 +18,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Initial fetch of profile or demo login
     const initAuth = async () => {
       try {
         const u = await api.demoLogin("operator");

@@ -77,7 +77,7 @@ def test_core_http_workflow_create_train_triage_resolve(client):
     # 6. Resolve Review Item
     resolve_payload = {
         "resolved_intent": "billing_inquiry",
-        "reviewer_notes": "Resolved ambiguous inquiry as billing after confirmation",
+        "reviewer_notes": "Confirmed billing issue",
         "add_to_training_dataset": True,
     }
     res_resolve = client.post(
@@ -88,6 +88,88 @@ def test_core_http_workflow_create_train_triage_resolve(client):
     assert res_resolve.status_code == 200
     assert res_resolve.json()["status"] == "resolved"
     assert res_resolve.json()["resolved_intent"] == "billing_inquiry"
+
+
+def test_threshold_optimization_endpoint(client):
+    """Test the threshold optimization endpoint returns valid thresholds."""
+    # Create dataset
+    ds_name = f"threshold_test_dataset_{int(time.time() * 1000)}"
+    dataset_payload = {
+        "name": ds_name,
+        "description": "Threshold optimization test dataset",
+        "tickets": [
+            {"text": "Cancel my subscription immediately please", "actual_intent": "cancellation"},
+            {"text": "Terminate our account renewal plan", "actual_intent": "cancellation"},
+            {"text": "I want to cancel the recurring membership", "actual_intent": "cancellation"},
+            {"text": "Please delete account and cancel plan", "actual_intent": "cancellation"},
+            {"text": "Close and discontinue our subscription", "actual_intent": "cancellation"},
+            {"text": "Billed twice on this invoice statement", "actual_intent": "billing_inquiry"},
+            {"text": "Where is the PDF receipt for this payment?", "actual_intent": "billing_inquiry"},
+            {"text": "Incorrect credit card charge on statement", "actual_intent": "billing_inquiry"},
+            {"text": "Payment failed for monthly invoice", "actual_intent": "billing_inquiry"},
+            {"text": "Need billing invoice breakdown", "actual_intent": "billing_inquiry"},
+        ],
+    }
+    res_ds = client.post("/api/datasets", json=dataset_payload, headers={"X-Demo-Role": "operator"})
+    assert res_ds.status_code == 201
+    dataset_id = res_ds.json()["id"]
+
+    # Train model
+    train_payload = {
+        "name": "threshold_test_model",
+        "dataset_id": dataset_id,
+        "hyperparameters": {
+            "ngram_min": 1,
+            "ngram_max": 1,
+            "c_regularization": 1.0,
+            "test_size": 0.20,
+        },
+    }
+    res_train = client.post("/api/models/train", json=train_payload, headers={"X-Demo-Role": "operator"})
+    assert res_train.status_code == 201
+    model_id = res_train.json()["id"]
+
+    # Optimize thresholds
+    opt_payload = {
+        "min_confidence": 0.5,
+        "max_confidence": 0.95,
+        "min_margin": 0.05,
+        "max_margin": 0.5,
+        "step": 0.05,
+    }
+    res_opt = client.post(
+        f"/api/models/{model_id}/optimize-thresholds",
+        json=opt_payload,
+        headers={"X-Demo-Role": "operator"},
+    )
+    assert res_opt.status_code == 200
+    opt_data = res_opt.json()
+
+    # Validate response structure
+    assert "optimal_confidence_threshold" in opt_data
+    assert "optimal_margin_threshold" in opt_data
+    assert "expected_auto_routed_rate" in opt_data
+    assert "expected_auto_routed_accuracy" in opt_data
+    assert "expected_review_queue_rate" in opt_data
+    assert "threshold_curve" in opt_data
+    assert isinstance(opt_data["threshold_curve"], list)
+    assert len(opt_data["threshold_curve"]) > 0
+
+    # Validate thresholds are in expected ranges
+    assert 0.5 <= opt_data["optimal_confidence_threshold"] <= 0.95
+    assert 0.05 <= opt_data["optimal_margin_threshold"] <= 0.5
+    assert 0.0 <= opt_data["expected_auto_routed_rate"] <= 1.0
+    assert 0.0 <= opt_data["expected_auto_routed_accuracy"] <= 1.0
+    assert 0.0 <= opt_data["expected_review_queue_rate"] <= 1.0
+
+    # Validate curve points
+    for point in opt_data["threshold_curve"]:
+        assert "confidence_threshold" in point
+        assert "margin_threshold" in point
+        assert "auto_routed_rate" in point
+        assert "auto_routed_accuracy" in point
+        assert "review_queue_rate" in point
+        assert "score" in point
 
 
 def test_oidc_bearer_token_propagation_and_rejection(client):

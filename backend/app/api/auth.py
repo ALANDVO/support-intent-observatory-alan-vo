@@ -30,10 +30,7 @@ def get_auth_config() -> Dict[str, Any]:
 
 @router.post("/demo-login", response_model=UserIdentity)
 def demo_login(req: DemoLoginRequest, request: Request) -> UserIdentity:
-    """
-    Simulates role-based login for local testing.
-    Strictly restricted to localhost loopback and non-production environments.
-    """
+    """Simulate role-based login for local loopback testing only."""
     if not settings.demo_mode or settings.environment == "production":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

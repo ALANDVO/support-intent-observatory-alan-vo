@@ -1,6 +1,5 @@
 """Automated ticket triage, uncertainty routing, and queue management service."""
-
-from typing import Any, Dict, Optional
+from typing import Optional
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.models.entities import TicketRecord, ReviewQueueItem
@@ -29,13 +28,11 @@ class TriageService:
             else settings.default_margin_threshold
         )
 
-        # 1. Run ML inference
         pred_result = ml_engine.predict(req.text)
         predicted_intent = pred_result["predicted_intent"]
         confidence = float(pred_result["confidence"])
         margin = float(pred_result["margin"])
 
-        # 2. Evaluate uncertainty
         is_uncertain = False
         uncertainty_reason: Optional[str] = None
 
@@ -80,7 +77,6 @@ class TriageService:
 
             db.commit()
 
-        # 3. Optional Advisory Insight
         advisory_payload = None
         if req.include_advisory:
             advisory = llm_service.generate_advisory(

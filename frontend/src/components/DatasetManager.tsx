@@ -30,7 +30,6 @@ export const DatasetManager: React.FC<DatasetManagerProps> = ({ onModelTrained }
         setActiveDataset(detail);
       }
     } catch {
-      // Handled
     } finally {
       setIsLoading(false);
     }

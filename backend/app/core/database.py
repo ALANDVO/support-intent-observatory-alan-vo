@@ -1,13 +1,11 @@
 """Database configuration and session management for SQLite persistence."""
 
-import os
 import pathlib
 from typing import Generator
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from app.core.config import settings
 
-# Ensure data directory exists for SQLite
 if settings.database_url.startswith("sqlite:///"):
     db_path = settings.database_url.replace("sqlite:///", "")
     if db_path and db_path != ":memory:":
@@ -24,7 +22,6 @@ engine = create_engine(
     echo=False,
 )
 
-# Enable foreign keys for SQLite
 if "sqlite" in settings.database_url:
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):

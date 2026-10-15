@@ -8,7 +8,15 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import require_role
 from app.models.entities import DatasetRecord, ModelTrainingRecord, EvaluationRecord, TicketRecord
-from app.models.schemas import ModelTrainRequest, ModelResponse, EvaluationResponse, UserIdentity
+from app.models.schemas import (
+    ModelTrainRequest,
+    ModelResponse,
+    EvaluationResponse,
+    UserIdentity,
+    ThresholdOptimizationRequest,
+    ThresholdCurvePoint,
+    ThresholdOptimizationResponse,
+)
 from app.services.ml_engine import ml_engine
 from app.services.audit_service import audit_service
 
@@ -104,6 +112,7 @@ def train_model(
         confusion_matrix=json.dumps(eval_result["confusion_matrix"]),
         discriminative_features=json.dumps(eval_result["discriminative_features"]),
         baseline_comparison=json.dumps(eval_result["baseline_comparison"]),
+        threshold_optimization_data=json.dumps(eval_result.get("test_sample_predictions", [])),
     )
     db.add(eval_record)
     db.commit()
@@ -192,4 +201,43 @@ def get_model_evaluation(
         discriminative_features=json.loads(eval_rec.discriminative_features),
         baseline_comparison=json.loads(eval_rec.baseline_comparison),
         created_at=eval_rec.created_at,
+    )
+
+
+@router.post("/{model_id}/optimize-thresholds", response_model=ThresholdOptimizationResponse)
+def optimize_model_thresholds(
+    model_id: str,
+    req: ThresholdOptimizationRequest,
+    db: Session = Depends(get_db),
+    current_user: UserIdentity = Depends(require_role("operator")),
+) -> ThresholdOptimizationResponse:
+    """Compute optimal confidence and margin thresholds for triage routing."""
+    eval_rec = db.query(EvaluationRecord).filter(EvaluationRecord.model_id == model_id).first()
+    if not eval_rec:
+        raise HTTPException(status_code=404, detail=f"Evaluation record for model '{model_id}' not found.")
+
+    if not eval_rec.threshold_optimization_data:
+        raise HTTPException(status_code=400, detail="Model evaluation lacks threshold optimization data. Retrain the model to generate it.")
+
+    test_sample_predictions = json.loads(eval_rec.threshold_optimization_data)
+    if not test_sample_predictions:
+        raise HTTPException(status_code=400, detail="No test sample predictions available for threshold optimization.")
+
+    result = ml_engine.optimize_thresholds(
+        test_sample_predictions=test_sample_predictions,
+        min_confidence=req.min_confidence,
+        max_confidence=req.max_confidence,
+        min_margin=req.min_margin,
+        max_margin=req.max_margin,
+        step=req.step,
+        target_auto_routed_rate=req.target_auto_routed_rate,
+    )
+
+    return ThresholdOptimizationResponse(
+        optimal_confidence_threshold=result.optimal_confidence_threshold,
+        optimal_margin_threshold=result.optimal_margin_threshold,
+        expected_auto_routed_rate=result.expected_auto_routed_rate,
+        expected_auto_routed_accuracy=result.expected_auto_routed_accuracy,
+        expected_review_queue_rate=result.expected_review_queue_rate,
+        threshold_curve=[ThresholdCurvePoint(**p) for p in result.threshold_curve],
     )

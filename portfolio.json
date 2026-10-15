@@ -4,7 +4,7 @@
   "owner": "ALANDVO",
   "email": "alanvo@gmail.com",
   "domain": "nlp",
-  "summary": "Train and evaluate a local TF-IDF intent classifier from labeled customer support tickets, analyze confusion matrices, and triage uncertain tickets into human review queues.",
+  "summary": "Work in progress: support-intent-observatory-alan-vo",
   "workflows": [
     "Train and evaluate local TF-IDF intent classification models with n-gram tokenization and calibrate confidence scoring",
     "Inspect classification performance via confusion matrices, per-class precision/recall, and intent distribution analytics",
@@ -17,5 +17,6 @@
     "gemini",
     "ollama"
   ],
-  "version": "1.1.0"
+  "version": "1.1.0",
+  "status": "work-in-progress"
 }

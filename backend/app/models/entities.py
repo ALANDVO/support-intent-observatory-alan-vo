@@ -2,7 +2,6 @@
 
 import datetime
 import uuid
-from typing import Optional
 from sqlalchemy import (
     Column,
     String,
@@ -32,7 +31,7 @@ class DatasetRecord(Base):
     name = Column(String(120), nullable=False, unique=True)
     description = Column(Text, nullable=True)
     sample_count = Column(Integer, default=0, nullable=False)
-    intent_classes = Column(Text, nullable=False)  # JSON-encoded list of class labels
+    intent_classes = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
@@ -47,12 +46,12 @@ class TicketRecord(Base):
     dataset_id = Column(String(36), ForeignKey("datasets.id", ondelete="SET NULL"), nullable=True)
     external_ref = Column(String(100), nullable=True)
     text = Column(Text, nullable=False)
-    actual_intent = Column(String(80), nullable=True)  # Ground truth if labeled
+    actual_intent = Column(String(80), nullable=True)
     predicted_intent = Column(String(80), nullable=True)
     confidence = Column(Float, nullable=True)
     margin = Column(Float, nullable=True)
     is_uncertain = Column(Boolean, default=False, nullable=False)
-    routing_status = Column(String(50), default="unprocessed", nullable=False)  # auto_routed, human_review, resolved
+    routing_status = Column(String(50), default="unprocessed", nullable=False)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
@@ -66,8 +65,8 @@ class ModelTrainingRecord(Base):
     id = Column(String(36), primary_key=True, default=generate_uuid)
     name = Column(String(120), nullable=False)
     dataset_id = Column(String(36), ForeignKey("datasets.id", ondelete="SET NULL"), nullable=True)
-    status = Column(String(40), default="training", nullable=False)  # ready, training, failed
-    hyperparameters = Column(Text, nullable=False)  # JSON-encoded dict
+    status = Column(String(40), default="training", nullable=False)
+    hyperparameters = Column(Text, nullable=False)
     train_sample_count = Column(Integer, default=0, nullable=False)
     test_sample_count = Column(Integer, default=0, nullable=False)
     accuracy = Column(Float, nullable=True)
@@ -87,15 +86,15 @@ class EvaluationRecord(Base):
 
     id = Column(String(36), primary_key=True, default=generate_uuid)
     model_id = Column(String(36), ForeignKey("models.id", ondelete="CASCADE"), nullable=False, unique=True)
-    overall_metrics = Column(Text, nullable=False)  # JSON-encoded dict (accuracy, macro/weighted precision/recall/f1)
-    per_class_metrics = Column(Text, nullable=False)  # JSON-encoded dict
-    confusion_matrix = Column(Text, nullable=False)  # JSON-encoded dict (labels, counts matrix, normalized matrix)
-    discriminative_features = Column(Text, nullable=False)  # JSON-encoded dict (top keywords per intent)
-    baseline_comparison = Column(Text, nullable=False)  # JSON-encoded dict (ML model vs keyword baseline)
+    overall_metrics = Column(Text, nullable=False)
+    per_class_metrics = Column(Text, nullable=False)
+    confusion_matrix = Column(Text, nullable=False)
+    discriminative_features = Column(Text, nullable=False)
+    baseline_comparison = Column(Text, nullable=False)
+    threshold_optimization_data = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     model = relationship("ModelTrainingRecord", back_populates="evaluation")
-
 
 class ReviewQueueItem(Base):
     __tablename__ = "review_queue"
@@ -106,7 +105,7 @@ class ReviewQueueItem(Base):
     confidence = Column(Float, nullable=False)
     margin = Column(Float, nullable=False)
     uncertainty_reason = Column(String(200), nullable=False)
-    status = Column(String(40), default="pending", nullable=False)  # pending, resolved, dismissed
+    status = Column(String(40), default="pending", nullable=False)
     resolved_intent = Column(String(80), nullable=True)
     reviewer_notes = Column(Text, nullable=True)
     resolved_by = Column(String(120), nullable=True)
@@ -126,5 +125,5 @@ class AuditLogRecord(Base):
     action = Column(String(80), nullable=False)
     resource_type = Column(String(80), nullable=False)
     resource_id = Column(String(120), nullable=True)
-    details = Column(Text, nullable=True)  # JSON-encoded details
+    details = Column(Text, nullable=True)
     status = Column(String(40), default="success", nullable=False)

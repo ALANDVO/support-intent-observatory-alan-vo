@@ -55,7 +55,6 @@ class ApiClient {
     return res.json();
   }
 
-  // Auth endpoints
   async getProfile(): Promise<UserIdentity> {
     return this.request<UserIdentity>("/api/auth/me");
   }
@@ -68,12 +67,10 @@ class ApiClient {
     });
   }
 
-  // System endpoints
   async getSystemStats(): Promise<SystemStats> {
     return this.request<SystemStats>("/api/system/stats");
   }
 
-  // Datasets endpoints
   async listDatasets(): Promise<Dataset[]> {
     return this.request<Dataset[]>("/api/datasets");
   }
@@ -86,7 +83,6 @@ class ApiClient {
     return this.request<Dataset>("/api/datasets/seed", { method: "POST" });
   }
 
-  // Models endpoints
   async listModels(): Promise<ModelTrainingItem[]> {
     return this.request<ModelTrainingItem[]>("/api/models");
   }
@@ -112,7 +108,6 @@ class ApiClient {
     return this.request<EvaluationData>(`/api/models/${id}/evaluation`);
   }
 
-  // Triage endpoints
   async triageTicket(params: {
     text: string;
     external_ref?: string;
@@ -126,7 +121,6 @@ class ApiClient {
     });
   }
 
-  // Review Queue endpoints
   async listReviewQueue(status: string = "pending"): Promise<ReviewQueueItem[]> {
     return this.request<ReviewQueueItem[]>(`/api/review-queue?queue_status=${status}`);
   }
