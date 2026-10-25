@@ -10,6 +10,31 @@ import {
   SystemStats,
 } from "../types/api";
 
+interface ThresholdOptimizationRequest {
+  min_confidence?: number;
+  max_confidence?: number;
+  min_margin?: number;
+  max_margin?: number;
+  step?: number;
+  target_auto_routed_rate?: number | null;
+}
+
+interface ThresholdOptimizationResponse {
+  optimal_confidence_threshold: number;
+  optimal_margin_threshold: number;
+  expected_auto_routed_rate: number;
+  expected_auto_routed_accuracy: number;
+  expected_review_queue_rate: number;
+  threshold_curve: Array<{
+    confidence_threshold: number;
+    margin_threshold: number;
+    auto_routed_rate: number;
+    auto_routed_accuracy: number;
+    review_queue_rate: number;
+    score: number;
+  }>;
+}
+
 class ApiClient {
   private token: string | null = null;
   private demoRole: string = "operator";
@@ -27,32 +52,27 @@ class ApiClient {
   }
 
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
-    const headers = new Headers(options.headers || {});
-    headers.set("Content-Type", "application/json");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
 
     if (this.token) {
-      headers.set("Authorization", `Bearer ${this.token}`);
+      headers["Authorization"] = `Bearer ${this.token}`;
     } else {
-      headers.set("X-Demo-Role", this.demoRole);
+      headers["X-Demo-Role"] = this.demoRole;
     }
 
-    const res = await fetch(path, {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ""}${path}`, {
       ...options,
       headers,
     });
 
-    if (!res.ok) {
-      let errorMsg = `HTTP Error ${res.status}`;
-      try {
-        const errorData = await res.json();
-        errorMsg = errorData.detail || errorData.message || errorMsg;
-      } catch {
-        // Fallback to status text
-      }
-      throw new Error(errorMsg);
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: response.statusText }));
+      throw new Error(error.detail || `HTTP ${response.status}`);
     }
 
-    return res.json();
+    return response.json();
   }
 
   async getProfile(): Promise<UserIdentity> {
@@ -60,7 +80,6 @@ class ApiClient {
   }
 
   async demoLogin(role: string): Promise<UserIdentity> {
-    this.demoRole = role;
     return this.request<UserIdentity>("/api/auth/demo-login", {
       method: "POST",
       body: JSON.stringify({ role }),
@@ -89,8 +108,8 @@ class ApiClient {
 
   async trainModel(params: {
     name: string;
-    dataset_id?: string | null;
-    hyperparameters?: Record<string, unknown>;
+    dataset_id?: string;
+    hyperparameters: Record<string, unknown>;
   }): Promise<ModelTrainingItem> {
     return this.request<ModelTrainingItem>("/api/models/train", {
       method: "POST",
@@ -108,11 +127,16 @@ class ApiClient {
     return this.request<EvaluationData>(`/api/models/${id}/evaluation`);
   }
 
+  async optimizeThresholds(modelId: string, params: ThresholdOptimizationRequest): Promise<ThresholdOptimizationResponse> {
+    return this.request<ThresholdOptimizationResponse>(`/api/models/${modelId}/optimize-thresholds`, {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+  }
+
   async triageTicket(params: {
     text: string;
     external_ref?: string;
-    confidence_threshold?: number;
-    margin_threshold?: number;
     include_advisory?: boolean;
   }): Promise<TriageResult> {
     return this.request<TriageResult>("/api/tickets/triage", {
@@ -131,11 +155,7 @@ class ApiClient {
 
   async resolveReviewItem(
     id: string,
-    params: {
-      resolved_intent: string;
-      reviewer_notes?: string;
-      add_to_training_dataset?: boolean;
-    }
+    params: { resolved_intent: string; reviewer_notes?: string; add_to_training_dataset?: boolean }
   ): Promise<ReviewQueueItem> {
     return this.request<ReviewQueueItem>(`/api/review-queue/${id}/resolve`, {
       method: "POST",
@@ -145,3 +165,6 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+</arg_key>
+<arg_key=i>
+Update API client with optimizeThresholds method

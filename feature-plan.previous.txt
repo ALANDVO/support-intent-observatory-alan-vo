@@ -1,1 +1,41 @@
-{"schema_version":1,"current_feature":"update","features":[{"name":"tfidf-classifier","status":"complete","description":"TF-IDF n-gram feature extraction with sublinear weighting"},{"name":"model-evaluation","status":"complete","description":"Confusion matrix, per-class precision/recall/F1, discriminative feature weights"},{"name":"automated-triage","status":"complete","description":"Confidence and margin thresholding with human-in-the-loop routing"},{"name":"review-queue","status":"complete","description":"Human review of uncertain predictions with feedback loop"},{"name":"llm-advisory","status":"complete","description":"Multi-provider LLM advisory (OpenAI/Anthropic/Gemini/Ollama) with offline fallback"},{"name":"oidc-auth","status":"complete","description":"Keycloak OIDC authorization code flow with local demo mode and RBAC"},{"name":"react-frontend","status":"complete","description":"React + TypeScript + Vite interface with interactive visualizations"},{"name":"sqlite-persistence","status":"complete","description":"SQLite transactional storage with audit logging and pagination"},{"name":"update-phase","status":"complete","description":"Fixed blocking bugs, restored test suite, trimmed source to meet budget, prepared checkpoint"}]}
+{
+  "schema_version": 1,
+  "current_feature": "threshold-optimization-ui",
+  "features": [
+    {
+      "id": "threshold-optimization-ui",
+      "title": "Threshold Optimization UI for Model Evaluation",
+      "status": "done",
+      "acceptance": [
+        "Frontend component for threshold optimization with configurable search parameters",
+        "API client method for calling the `/api/models/{id}/optimize-thresholds` endpoint",
+        "New \"Threshold Optimization\" tab in the navigation",
+        "Display of optimal confidence/margin thresholds with expected routing metrics",
+        "Threshold search curve table showing top 20 combinations by score",
+        "Recommendation panel with production-ready threshold values"
+      ],
+      "implementation": [
+        "frontend/src/components/ThresholdOptimization.tsx",
+        "frontend/src/api/client.ts",
+        "frontend/src/App.tsx",
+        "frontend/src/components/Navbar.tsx"
+      ],
+      "tests": [
+        "backend/tests/test_api_workflows.py::test_threshold_optimization_endpoint"
+      ]
+    },
+    {
+      "id": "continue-implementation",
+      "title": "Continue implementation and resolve known failures",
+      "status": "in_progress",
+      "acceptance": [
+        "Run checks, fix failures, and implement the next planned feature"
+      ],
+      "implementation": [],
+      "tests": []
+    }
+  ]
+}
+</arg_key>
+<arg_key=i>
+Update feature-plan.json

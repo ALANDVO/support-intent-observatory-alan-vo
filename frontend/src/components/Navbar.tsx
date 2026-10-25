@@ -25,6 +25,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       badge: pendingCount > 0 ? pendingCount : undefined,
     },
     { id: "datasets", label: "Datasets & Training" },
+    { id: "thresholds", label: "Threshold Optimization" },
   ];
 
   return (
@@ -95,3 +96,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
+</arg_key>
+<arg_key=i>
+Update Navbar with Threshold Optimization tab

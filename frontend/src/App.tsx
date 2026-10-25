@@ -6,6 +6,7 @@ import { ConfusionMatrix } from "./components/ConfusionMatrix";
 import { TriageWorkbench } from "./components/TriageWorkbench";
 import { ReviewQueue } from "./components/ReviewQueue";
 import { DatasetManager } from "./components/DatasetManager";
+import { ThresholdOptimization } from "./components/ThresholdOptimization";
 import { SystemStats, EvaluationData } from "./types/api";
 import { api } from "./api/client";
 
@@ -102,6 +103,10 @@ const MainContent: React.FC = () => {
         {activeTab === "datasets" && (
           <DatasetManager onModelTrained={refreshData} />
         )}
+
+        {activeTab === "thresholds" && (
+          <ThresholdOptimization />
+        )}
       </main>
 
       <footer className="border-t border-slate-800 bg-slate-950 py-4 text-center text-xs text-slate-500">
@@ -120,3 +125,6 @@ export const App: React.FC = () => {
 };
 
 export default App;
+</arg_key>
+<arg_key=i>
+Update App.tsx to include ThresholdOptimization tab
