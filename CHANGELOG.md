@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0 — work-in-progress checkpoint
+
+Partial code published for continued development. Known issues: STATUS.md.
+
 ## 1.2.0 — work-in-progress checkpoint
 
 Partial code published for continued development. Known issues: STATUS.md.
@@ -29,3 +33,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fast, typed React + TypeScript + Vite frontend with interactive confusion matrix visualization, triage workbench, and dataset manager.
 - SQLite transactional persistence with parameterized queries, audit logging, and pagination.
 - Docker multi-stage containers with non-root execution and Compose orchestration.
+
+### [Unreleased] - 2026-10-25
+
+### Added
+- Threshold Optimization UI (`ThresholdOptimization` component) for finding optimal confidence and margin thresholds for triage routing.
+- Grid search parameter controls (min/max confidence, min/max margin, step size, target auto-route rate).
+- Results display showing optimal thresholds, expected auto-route rate, accuracy, and review queue rate.
+- Threshold search curve table with top 20 combinations ranked by optimization score.
+- Production recommendation panel with formatted threshold values for deployment.
+- New "Threshold Optimization" navigation tab accessible to operator and admin roles.
+- API client `optimizeThresholds` method for calling `/api/models/{id}/optimize-thresholds` endpoint.
+</arg_key>
+<arg_key=i>
+Update CHANGELOG.md with new feature
