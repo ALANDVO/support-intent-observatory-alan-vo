@@ -165,6 +165,3 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
-</arg_key>
-<arg_key=i>
-Update API client with optimizeThresholds method

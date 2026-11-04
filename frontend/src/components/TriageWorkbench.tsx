@@ -8,8 +8,6 @@ interface TriageWorkbenchProps {
 
 export const TriageWorkbench: React.FC<TriageWorkbenchProps> = ({ onTriageComplete }) => {
   const [text, setText] = useState("");
-  const [confidenceThreshold, setConfidenceThreshold] = useState(0.7);
-  const [marginThreshold, setMarginThreshold] = useState(0.2);
   const [includeAdvisory, setIncludeAdvisory] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<TriageResult | null>(null);
@@ -31,8 +29,6 @@ export const TriageWorkbench: React.FC<TriageWorkbenchProps> = ({ onTriageComple
     try {
       const res = await api.triageTicket({
         text,
-        confidence_threshold: confidenceThreshold,
-        margin_threshold: marginThreshold,
         include_advisory: includeAdvisory,
       });
       setResult(res);
@@ -80,39 +76,6 @@ export const TriageWorkbench: React.FC<TriageWorkbenchProps> = ({ onTriageComple
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="flex justify-between text-xs text-slate-300 mb-1">
-                  <span>Confidence Threshold</span>
-                  <span className="font-mono text-indigo-400">{(confidenceThreshold * 100).toFixed(0)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.4"
-                  max="0.95"
-                  step="0.05"
-                  value={confidenceThreshold}
-                  onChange={(e) => setConfidenceThreshold(parseFloat(e.target.value))}
-                  className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between text-xs text-slate-300 mb-1">
-                  <span>Margin Threshold</span>
-                  <span className="font-mono text-indigo-400">{(marginThreshold * 100).toFixed(0)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.05"
-                  max="0.5"
-                  step="0.05"
-                  value={marginThreshold}
-                  onChange={(e) => setMarginThreshold(parseFloat(e.target.value))}
-                  className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                />
-              </div>
-            </div>
 
             <div className="flex items-center justify-between pt-2">
               <label className="flex items-center space-x-2 text-xs text-slate-300 cursor-pointer">

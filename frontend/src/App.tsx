@@ -6,7 +6,7 @@ import { ConfusionMatrix } from "./components/ConfusionMatrix";
 import { TriageWorkbench } from "./components/TriageWorkbench";
 import { ReviewQueue } from "./components/ReviewQueue";
 import { DatasetManager } from "./components/DatasetManager";
-import { ThresholdOptimization } from "./components/ThresholdOptimization";
+import ThresholdOptimization from "./components/ThresholdOptimization";
 import { SystemStats, EvaluationData } from "./types/api";
 import { api } from "./api/client";
 
@@ -125,6 +125,3 @@ export const App: React.FC = () => {
 };
 
 export default App;
-</arg_key>
-<arg_key=i>
-Update App.tsx to include ThresholdOptimization tab

@@ -96,6 +96,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
-</arg_key>
-<arg_key=i>
-Update Navbar with Threshold Optimization tab
