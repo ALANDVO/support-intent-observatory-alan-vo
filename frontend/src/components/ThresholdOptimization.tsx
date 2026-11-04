@@ -294,6 +294,3 @@ const ThresholdOptimization: React.FC = () => {
 };
 
 export default ThresholdOptimization;
-</arg_key>
-<arg_key=i>
-Create ThresholdOptimization component

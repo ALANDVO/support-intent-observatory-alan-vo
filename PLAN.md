@@ -10,8 +10,12 @@ continue-implementation
 
 ### continue-implementation — Continue implementation and resolve known failures
 
-Status: in_progress
+Status: done
 
 Acceptance:
 - Run checks, fix failures, and implement the next planned feature
+
+Implementation: `frontend/src/api/client.ts`, `frontend/src/components/ThresholdOptimization.tsx`, `frontend/src/App.tsx`, `frontend/src/components/Navbar.tsx`, `frontend/src/vite-env.d.ts`, `frontend/src/components/TriageWorkbench.tsx`, `frontend/src/test/ThresholdOptimization.test.tsx`
+
+Tests: `frontend/src/test/ThresholdOptimization.test.tsx`, `backend/tests/test_api_workflows.py::test_threshold_optimization_endpoint`
 
