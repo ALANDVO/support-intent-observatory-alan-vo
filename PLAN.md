@@ -19,3 +19,6 @@ Implementation: `frontend/src/api/client.ts`, `frontend/src/components/Threshold
 
 Tests: `frontend/src/test/ThresholdOptimization.test.tsx`, `backend/tests/test_api_workflows.py::test_threshold_optimization_endpoint`
 
+---
+
+Alan Vo · [alanvo.net](https://alanvo.net)

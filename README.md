@@ -157,3 +157,7 @@ docker compose up -d
 
 ---
 *Maintained by Alan Vo (<alanvo@gmail.com>)*
+
+---
+
+Alan Vo · [alanvo.net](https://alanvo.net)
