@@ -233,6 +233,15 @@ def optimize_model_thresholds(
         target_auto_routed_rate=req.target_auto_routed_rate,
     )
 
+    # Store optimization results in evaluation record
+    eval_rec.optimal_confidence_threshold = result.optimal_confidence_threshold
+    eval_rec.optimal_margin_threshold = result.optimal_margin_threshold
+    eval_rec.expected_auto_routed_rate = result.expected_auto_routed_rate
+    eval_rec.expected_auto_routed_accuracy = result.expected_auto_routed_accuracy
+    eval_rec.expected_review_queue_rate = result.expected_review_queue_rate
+    eval_rec.threshold_optimization_curve = json.dumps(result.threshold_curve)
+    db.commit()
+
     return ThresholdOptimizationResponse(
         optimal_confidence_threshold=result.optimal_confidence_threshold,
         optimal_margin_threshold=result.optimal_margin_threshold,

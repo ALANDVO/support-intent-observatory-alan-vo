@@ -92,6 +92,12 @@ class EvaluationRecord(Base):
     discriminative_features = Column(Text, nullable=False)
     baseline_comparison = Column(Text, nullable=False)
     threshold_optimization_data = Column(Text, nullable=True)
+    optimal_confidence_threshold = Column(Float, nullable=True)
+    optimal_margin_threshold = Column(Float, nullable=True)
+    expected_auto_routed_rate = Column(Float, nullable=True)
+    expected_auto_routed_accuracy = Column(Float, nullable=True)
+    expected_review_queue_rate = Column(Float, nullable=True)
+    threshold_optimization_curve = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
 
     model = relationship("ModelTrainingRecord", back_populates="evaluation")
