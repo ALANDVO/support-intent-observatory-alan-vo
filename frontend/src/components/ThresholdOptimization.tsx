@@ -168,16 +168,30 @@ const ThresholdOptimization: React.FC = () => {
               </div>
               <div className="bg-slate-900/70 p-3 rounded border border-slate-700/60">
                 <label className="text-xs text-slate-400 block mb-1">Target Auto-Route Rate</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={params.target_auto_routed_rate ?? ""}
-                  onChange={(e) => setParams({ ...params, target_auto_routed_rate: e.target.value ? parseFloat(e.target.value) : null })}
-                  className="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-slate-100 focus:ring-1 focus:ring-indigo-500"
-                  placeholder="Optional"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={params.target_auto_routed_rate ?? ""}
+                    onChange={(e) => setParams({ ...params, target_auto_routed_rate: e.target.value ? parseFloat(e.target.value) : null })}
+                    className="flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-slate-100 focus:ring-1 focus:ring-indigo-500"
+                    placeholder="Optional"
+                    disabled={isLoading}
+                  />
+                  {params.target_auto_routed_rate !== null && (
+                    <button
+                      type="button"
+                      onClick={() => setParams({ ...params, target_auto_routed_rate: null })}
+                      disabled={isLoading}
+                      className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs rounded border border-slate-600 transition-colors disabled:opacity-50"
+                      title="Clear target auto-route rate"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
