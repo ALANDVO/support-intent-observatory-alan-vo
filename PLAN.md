@@ -4,9 +4,22 @@ Each round completes one feature or repair. Future items are planned, not implem
 
 ## Current round
 
-continue-implementation
+threshold-ux-improvement
 
 ## Roadmap
+
+### threshold-ux-improvement — Add Clear button for Target Auto-Rate field in Threshold Optimization
+
+Status: done
+
+Acceptance:
+- Clear button appears when Target Auto-Route Rate has a value
+- Clicking Clear resets the field to empty/optional state
+- All existing tests continue to pass
+
+Implementation: `frontend/src/components/ThresholdOptimization.tsx`
+
+Tests: `frontend/src/test/ThresholdOptimization.test.tsx`, `backend/tests/test_api_workflows.py::test_threshold_optimization_endpoint`
 
 ### continue-implementation — Continue implementation and resolve known failures
 

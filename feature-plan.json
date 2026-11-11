@@ -1,7 +1,24 @@
 {
   "schema_version": 1,
-  "current_feature": "continue-implementation",
+  "current_feature": "threshold-ux-improvement",
   "features": [
+    {
+      "id": "threshold-ux-improvement",
+      "title": "Add Clear button for Target Auto-Rate field in Threshold Optimization",
+      "status": "done",
+      "acceptance": [
+        "Clear button appears when Target Auto-Route Rate has a value",
+        "Clicking Clear resets the field to empty/optional state",
+        "All existing tests continue to pass"
+      ],
+      "implementation": [
+        "frontend/src/components/ThresholdOptimization.tsx"
+      ],
+      "tests": [
+        "frontend/src/test/ThresholdOptimization.test.tsx",
+        "backend/tests/test_api_workflows.py::test_threshold_optimization_endpoint"
+      ]
+    },
     {
       "id": "continue-implementation",
       "title": "Continue implementation and resolve known failures",

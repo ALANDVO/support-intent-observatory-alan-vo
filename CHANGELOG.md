@@ -1,6 +1,13 @@
 # Changelog
 
+## 1.6.0 — work-in-progress checkpoint
+
+Partial code published for continued development. Known issues: STATUS.md.
+
 ## 1.5.0 — work-in-progress checkpoint
+
+### Improved
+- Added "Clear" button for the optional Target Auto-Route Rate field in Threshold Optimization UI, allowing users to easily reset the target rate parameter.
 
 Partial code published for continued development. Known issues: STATUS.md.
 
