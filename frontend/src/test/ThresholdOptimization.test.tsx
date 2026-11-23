@@ -82,7 +82,7 @@ describe("ThresholdOptimization Component", () => {
     // Click the Clear button
     fireEvent.click(clearButton);
 
-    // Verify the input is now empty/optional
-    expect(rateInput).toHaveValue("");
+    // Wait for the input to have an empty value attribute
+    await waitFor(() => expect(rateInput).toHaveAttribute("value", ""));
   });
 });

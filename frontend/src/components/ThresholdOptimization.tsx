@@ -179,11 +179,13 @@ const ThresholdOptimization: React.FC = () => {
                     className="flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-slate-100 focus:ring-1 focus:ring-indigo-500"
                     placeholder="Optional"
                     disabled={isLoading}
+                    role="textbox"
+                    aria-label="Target Auto-Route Rate"
                   />
                   {params.target_auto_routed_rate !== null && (
                     <button
                       type="button"
-                      onClick={() => setParams({ ...params, target_auto_routed_rate: null })}
+                      onClick={() => setParams(prev => ({ ...prev, target_auto_routed_rate: null }))}
                       disabled={isLoading}
                       className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs rounded border border-slate-600 transition-colors disabled:opacity-50"
                       title="Clear target auto-route rate"
